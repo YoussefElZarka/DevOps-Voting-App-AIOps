@@ -22,6 +22,8 @@ WORKDIR /app
 
 # Copy application code and installed packages
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
+
 COPY . .
 
 # Expose the port the app runs on
@@ -32,6 +34,7 @@ RUN chown -R appuser:appuser /app
 
 # Switch to the non-root user
 USER appuser
+
 
 # Command to run the application using Gunicorn for production readiness
 CMD ["gunicorn", "--bind", "0.0.0.0:5001", "app:app"]
