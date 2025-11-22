@@ -1,0 +1,125 @@
+# Default values for voting-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: yourregistry/voting-app
+  pullPolicy: IfNotPresent
+  # Overwrite with the actual image tag from CI/CD
+  tag: "latest"
+
+imagePullSecret: regcred
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  host: localhost
+  votePath: /
+  resultPath: /result
+
+# Database connection details (used by worker and result)
+database:
+  host: postgres-postgresql
+  port: 5432
+  name: vote
+  user: postgres
+  # The password should be stored in a Kubernetes Secret and referenced here
+  secretName: voting-db-secret
+  secretKey: postgres-password
+
+# Redis connection details (used by vote and worker)
+redis:
+  host: redis-master
+  port: 6379
+
+# Services configuration with their resource limits
+services:
+  vote:
+    port: 80
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+  result:
+    port: 80
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+  worker:
+    # Worker doesn't expose a port
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+  ai-monitor:
+    port: 5001
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# Resource requests and limits for each service (deprecated - use services above)
+resources:
+  vote:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  result:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  worker:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  ai-monitor:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Security Context for Pods (enforcing non-root)
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# Network Policy configuration
+networkPolicy:
+  enabled: false  # Changed to false to avoid issues with local k3d

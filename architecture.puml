@@ -1,0 +1,78 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title DevOps Voting App - Comprehensive Architecture
+
+System_Boundary(c1, "CI/CD Pipeline (GitHub Actions)") {
+    Container(repo, "GitHub Repository", "Code Storage", "Source code, Dockerfiles, Helm, Terraform")
+    Container(ci, "Build & Scan Job", "GitHub Actions", "Builds Docker Images, Runs Trivy Security Scan")
+    Container(cd, "Deployment Job", "GitHub Actions", "Authenticates via Kubeconfig, Deploys Helm Chart")
+    
+    Rel(repo, ci, "Triggers on Push/PR")
+    Rel(ci, cd, "Triggers on Success")
+}
+
+System_Boundary(c2, "Production Environment (Local/On-Prem K8s)") {
+    System_Boundary(c3, "Kubernetes Cluster (K3s/Minikube)") {
+        Container(ingress, "NGINX Ingress Controller", "Kubernetes Service", "Routes external traffic")
+        Container(vote_app, "Vote App", "Python/Flask Container", "Frontend for voting (Port 80)")
+        Container(result_app, "Result App", "Node.js Container", "Frontend for results (Port 80)")
+        Container(worker_app, "Worker App", ".NET Core Container", "Processes votes")
+        Container(ai_agent, "AI Agent (AIOps)", "Python/Flask Container", "Predictive Monitoring & Analysis")
+        
+        Container(redis_db, "Redis (Helm)", "In-Memory DB/Queue", "Stores new votes")
+        Container(postgres_db, "PostgreSQL (Helm)", "Persistent DB", "Stores final results")
+        
+        Rel(ingress, vote_app, "Routes traffic to /")
+        Rel(ingress, result_app, "Routes traffic to /result")
+        
+        Rel(vote_app, redis_db, "Writes new votes")
+        Rel(worker_app, redis_db, "Reads votes from queue")
+        Rel(worker_app, postgres_db, "Writes final results")
+        Rel(result_app, postgres_db, "Reads results")
+        
+        Rel(postgres_db, worker_app, "NetworkPolicy: Allows ingress from worker/result only")
+        Rel(postgres_db, result_app, "NetworkPolicy: Allows ingress from worker/result only")
+        
+        Container(prom, "Prometheus/Grafana", "Monitoring Stack", "Scrapes metrics and visualizes data")
+        Rel(prom, vote_app, "Scrapes Metrics (ServiceMonitor)")
+        Rel(prom, ai_agent, "Provides Metrics to AI Agent")
+    }
+    
+    Container(tf, "Local K8s Setup Guide", "Documentation", "Explains K3s/Minikube setup and trade-offs")
+    Container(acr, "Container Registry (ACR/Docker Hub)", "Image Repository", "Stores Docker Images")
+    
+    Rel(tf, c2, "Documents Infrastructure Setup")
+    Rel(ci, acr, "Pushes Images")
+    Rel(c3, acr, "Pulls Images")
+    Rel(cd, c3, "Deploys Helm Chart")
+}
+
+System_Boundary(c4, "Local Development (Docker Compose)") {
+    Container(local_vote, "Vote App", "Python/Flask", "Exposed on 8080")
+    Container(local_result, "Result App", "Node.js", "Exposed on 8081")
+    Container(local_worker, "Worker App", ".NET Core", "Backend")
+    Container(local_ai_agent, "AI Agent (AIOps)", "Python/Flask", "Predictive Monitoring")
+    Container(local_redis, "Redis", "In-Memory DB", "Backend Network")
+    Container(local_postgres, "PostgreSQL", "Persistent DB", "Backend Network")
+    
+    Rel(local_vote, local_redis, "Writes")
+    Rel(local_worker, local_redis, "Reads")
+    Rel(local_worker, local_postgres, "Writes")
+    Rel(local_result, local_postgres, "Reads")
+    
+    Rel(local_vote, local_result, "Frontend Network")
+    Rel(local_worker, local_redis, "Backend Network")
+    Rel(local_worker, local_postgres, "Backend Network")
+    Rel(local_ai_agent, local_postgres, "Backend Network")
+}
+
+Person(user, "User/Voter", "Casts votes and views results")
+Rel(user, ingress, "Accesses via Ingress Host")
+Rel(user, local_vote, "Accesses via localhost:8080 (Local Test)")
+Rel(user, local_result, "Accesses via localhost:8081 (Local Test)")
+
+@enduml

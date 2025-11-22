@@ -1,0 +1,71 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "voting-app.fullname" . }}-db-isolation
+  labels:
+    {{- include "voting-app.labels" . | nindent 4 }}
+spec:
+  # Selects the PostgreSQL pods (assuming it's deployed with a label like app.kubernetes.io/instance: postgres)
+  # NOTE: This policy assumes the external PostgreSQL Helm chart uses a specific label.
+  # For this example, we will target the 'worker' service which needs to talk to the DB.
+  # In a real scenario, this would target the DB pod labels.
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: worker # The worker needs to talk to the DB
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress only to the PostgreSQL service (assuming the service is named 'postgres-postgresql')
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: postgresql # Replace with actual DB chart label
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow egress to Redis service
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: redis # Replace with actual Redis chart label
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns # Standard DNS pod label
+      ports:
+        - protocol: UDP
+          port: 53
+---
+# Policy to protect the DB (Inbound traffic)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "voting-app.fullname" . }}-db-ingress-protection
+  labels:
+    {{- include "voting-app.labels" . | nindent 4 }}
+spec:
+  # Selects the PostgreSQL pods (assuming it's deployed with a label like app.kubernetes.io/instance: postgresql)
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: postgresql # Replace with actual DB chart label
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow ingress only from the 'worker' and 'result' services
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: worker
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: result
+      ports:
+        - protocol: TCP
+          port: 5432
+{{- end }}

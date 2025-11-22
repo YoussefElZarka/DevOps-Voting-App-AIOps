@@ -1,0 +1,97 @@
+{{- range $name, $config := .Values.services }}
+{{- $fullName := printf "%s-%s" $.Release.Name $name }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "voting-app.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "voting-app.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "voting-app.selectorLabels" $ | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+    spec:
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+      containers:
+        - name: {{ $name }}
+          image: "{{ $.Values.image.repository }}-{{ $name }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- if ne $name "worker" }}
+          ports:
+            - name: http
+              containerPort: {{ if eq $name "ai-monitor" }}5001{{ else }}80{{ end }}
+              protocol: TCP
+          {{- end }}
+          {{- if $config.resources }}
+          resources:
+            {{- toYaml $config.resources | nindent 12 }}
+          {{- end }}
+          env:
+            {{- if or (eq $name "result") (eq $name "worker") }}
+            - name: POSTGRES_HOST
+              value: {{ $.Values.database.host }}
+            - name: POSTGRES_PORT
+              value: "{{ $.Values.database.port }}"
+            - name: POSTGRES_USER
+              value: {{ $.Values.database.user }}
+            - name: POSTGRES_DB
+              value: {{ $.Values.database.name }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.database.secretName }}
+                  key: {{ $.Values.database.secretKey }}
+            {{- end }}
+            {{- if or (eq $name "vote") (eq $name "worker") }}
+            - name: REDIS_HOST
+              value: {{ $.Values.redis.host }}
+            - name: REDIS_PORT
+              value: "{{ $.Values.redis.port }}"
+            {{- end }}
+          {{- if ne $name "worker" }}
+          {{- if ne $name "ai-monitor" }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            failureThreshold: 6
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 5
+          {{- else }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            failureThreshold: 6
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 6
+            timeoutSeconds: 5
+          {{- end }}
+          {{- end }}
+---
+{{- end }}

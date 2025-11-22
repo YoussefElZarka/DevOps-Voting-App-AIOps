@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # Frontend Voting App (Python/Flask)
+  vote:
+    build: ./vote
+    image: voting-app/vote:latest
+    ports:
+      - "8080:80"
+    networks:
+      - frontend
+    environment:
+      # Redis is on the backend network, accessible by service name
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # Frontend Results App (Node.js)
+  result:
+    build: ./result
+    image: voting-app/result:latest
+    ports:
+      - "8081:80"
+    networks:
+      - frontend
+    environment:
+      # Postgres is on the backend network, accessible by service name
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vote
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # AI Agent Service (Predictive Monitoring)
+  ai-monitor:
+    build: ./ai-monitor
+    image: voting-app/ai-monitor:latest
+    networks:
+      - backend
+    ports:
+      - "5001:5001" # Expose for testing/debugging, internal in production
+    # This service should ideally connect to Prometheus/Grafana to pull data,
+    # but for local testing, we place it on the backend network.
+
+  # Backend Worker (DotNet Core)
+  worker:
+    build: ./worker
+    image: voting-app/worker:latest
+    networks:
+      - backend
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vote
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  # Backend Redis Cache/Queue
+  redis:
+    image: redis:7-alpine
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    # The vote app expects Redis to be available for connection
+
+  # Backend PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    networks:
+      - backend
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=vote
+    volumes:
+      # Optional: Persist data for testing
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Optional Seed Data Service
+  seed-data:
+    image: voting-app/seed-data:latest
+    build: ./seed-data
+    networks:
+      - backend
+    command: ["/bin/sh", "-c", "./generate-votes.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    # This service is run once to populate initial data
+
+volumes:
+  postgres-data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

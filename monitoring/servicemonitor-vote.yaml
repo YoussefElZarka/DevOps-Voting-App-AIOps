@@ -1,0 +1,21 @@
+# NOTE: This ServiceMonitor manifest is provided as an example for integrating with Prometheus Operator.
+# It assumes that the 'vote' service exposes Prometheus metrics on port 80 at the path /metrics.
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: voting-app-vote
+  labels:
+    release: prometheus-stack # Match the label of your Prometheus installation
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: voting-app
+      app.kubernetes.io/component: vote
+  namespaceSelector:
+    matchNames:
+      - voting-app # Namespace where the app is deployed
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s

@@ -1,0 +1,205 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKER_REGISTRY: docker.io # Docker Hub registry
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Build, Scan, and Push Docker Images
+        run: |
+          TAG=${{ github.sha }}
+          SERVICES="vote result worker ai-monitor"
+          
+          for SERVICE in $SERVICES; do
+            IMAGE_NAME=${{ env.DOCKER_USERNAME }}/voting-app-$SERVICE
+            TAG_SHA="$IMAGE_NAME:$TAG"
+            TAG_LATEST="$IMAGE_NAME:latest"
+            
+            echo "Building and Pushing $SERVICE image..."
+            docker buildx build \
+              --push \
+              --tag $TAG_SHA \
+              --tag $TAG_LATEST \
+              --file $SERVICE/Dockerfile \
+              $SERVICE
+              
+            echo "Scanning $SERVICE image with Trivy..."
+            docker run --rm -v $PWD:/root/.trivy/cache aquasec/trivy:latest image --severity HIGH --ignore-unfixed $IMAGE_NAME:$TAG
+          done
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-scan
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up K3d cluster (as AKS replacement)
+        uses: AbsaOSS/k3d-action@v2
+        with:
+          cluster-name: devops-challenge-cluster
+          args: >-
+            --k3s-arg
+            --no-deploy=traefik@server:*
+
+      - name: Set kubeconfig for k3d
+        run: |
+          export KUBECONFIG=$(k3d kubeconfig write devops-challenge-cluster)
+          echo "KUBECONFIG=$KUBECONFIG" >> $GITHUB_ENV
+
+      - name: Install Nginx Ingress Controller
+        run: |
+          helm upgrade --install ingress-nginx ingress-nginx \
+            --repo https://kubernetes.github.io/ingress-nginx \
+            --namespace ingress-nginx --create-namespace \
+            --set controller.hostPort.enabled=true \
+            --set controller.service.type=NodePort
+
+      - name: Wait for Nginx Ingress Controller to be ready
+        run: |
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s
+
+      - name: Add Helm Repos for Dependencies
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace voting-app --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create Database Secret
+        run: |
+          kubectl create secret generic voting-db-secret \
+            --namespace voting-app \
+            --from-literal=postgres-password=postgres \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install PostgreSQL
+        run: |
+          helm upgrade --install postgres bitnami/postgresql \
+            --namespace voting-app \
+            --create-namespace \
+            --set auth.postgresPassword=postgres \
+            --set primary.persistence.enabled=false \
+            --atomic 
+
+      - name: Install Redis
+        run: |
+          helm upgrade --install redis bitnami/redis \
+            --namespace voting-app \
+            --set auth.enabled=false \
+            --set master.persistence.enabled=false \
+            --atomic 
+
+      - name: Install Helm
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Deploy with Helm
+        id: helm_deploy
+        continue-on-error: true
+        run: |
+          TAG=${{ github.sha }}
+          helm upgrade --install voting-app ./helm/voting-app \
+            --namespace voting-app \
+            --set image.repository=${{ env.DOCKER_USERNAME }}/voting-app \
+            --set image.tag=$TAG \
+            --set ingress.host=localhost \
+            --set imagePullSecret=regcred \
+            --set replicaCount=1 \
+            --timeout 10m \
+            --wait=false
+
+      - name: Wait a bit for pods to start
+        run: sleep 30
+
+      - name: Debug Deployment Status
+        run: |
+          echo "========================================="
+          echo "=== PODS STATUS ==="
+          echo "========================================="
+          kubectl get pods -n voting-app -o wide
+          
+          echo ""
+          echo "========================================="
+          echo "=== DEPLOYMENTS STATUS ==="
+          echo "========================================="
+          kubectl get deployments -n voting-app
+          
+          echo ""
+          echo "========================================="
+          echo "=== SERVICES ==="
+          echo "========================================="
+          kubectl get svc -n voting-app
+          
+          echo ""
+          echo "========================================="
+          echo "=== RECENT EVENTS ==="
+          echo "========================================="
+          kubectl get events -n voting-app --sort-by='.lastTimestamp' | tail -50
+          
+          echo ""
+          echo "========================================="
+          echo "=== DESCRIBE PROBLEMATIC PODS ==="
+          echo "========================================="
+          for pod in $(kubectl get pods -n voting-app --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}'); do
+            echo ""
+            echo ">>> Describing pod: $pod"
+            kubectl describe pod $pod -n voting-app
+            echo ""
+            echo ">>> Logs for pod: $pod"
+            kubectl logs $pod -n voting-app --all-containers --tail=100 || echo "No logs available yet"
+            echo "========================================="
+          done
+          
+          echo ""
+          echo "========================================="
+          echo "=== ALL PODS LOGS (First 50 lines) ==="
+          echo "========================================="
+          for pod in $(kubectl get pods -n voting-app -o jsonpath='{.items[*].metadata.name}'); do
+            echo ""
+            echo ">>> Logs for pod: $pod"
+            kubectl logs $pod -n voting-app --all-containers --tail=50 || echo "No logs available"
+            echo "---"
+          done
+
+      - name: Check if deployment succeeded
+        run: |
+          # Check if all pods are running
+          NOT_RUNNING=$(kubectl get pods -n voting-app --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers | wc -l)
+          if [ $NOT_RUNNING -gt 0 ]; then
+            echo "ERROR: Some pods are not running!"
+            exit 1
+          fi
+          echo "All pods are running successfully!"
