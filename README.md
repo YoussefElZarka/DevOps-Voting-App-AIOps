@@ -10,7 +10,7 @@ This repository contains the complete solution for the multi-service voting appl
 
 The following diagram illustrates the complete DevOps architecture, now targeting a generic Kubernetes cluster.
 
-![DevOps Voting App - Comprehensive Architecture](./architecture.png)
+![DevOps Voting App - Comprehensive Architecture](./architecture.svg)
 
 ### Application Components and Data Flow
 
