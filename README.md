@@ -1,18 +1,50 @@
 # DevOps Engineer Challenge: Secure, Observable, Scalable Setup (AIOps Enhanced)
 
+![DevOps Voting App - Comprehensive Architecture](./Architecture.svg)
+
+[![License](https://img.shields.io/github/license/YoussefElZarka/DevOps-Voting-App-AIOps)](LICENSE)  
+[![Build Status](https://img.shields.io/github/actions/workflow/status/YoussefElZarka/DevOps-Voting-App-AIOps/ci.yml)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/actions)  
+[![Issues](https://img.shields.io/github/issues/YoussefElZarka/DevOps-Voting-App-AIOps)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/issues)  
+[![Stars](https://img.shields.io/github/stars/YoussefElZarka/DevOps-Voting-App-AIOps)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/stargazers)
+
+
+
 ## Project Overview
 
 This repository contains the complete solution for the multi-service voting application DevOps challenge, **enhanced with an AI Agent for predictive monitoring (AIOps)**. The project has been refactored to target a **Local Kubernetes Cluster (K3s/Minikube)** instead of Azure AKS, with all necessary documentation and trade-offs provided.
 
-## Application Architecture
 
-### Comprehensive Architecture Diagram (K8s Local Deployment)
+This project demonstrates:
 
-The following diagram illustrates the complete DevOps architecture, now targeting a generic Kubernetes cluster.
+- Infrastructure automation (IaC)  
+- CI/CD pipelines for fast deployment  
+- Intelligent monitoring & predictive alerts  
+- Practical end-to-end DevOps workflow
 
-![DevOps Voting App - Comprehensive Architecture](./Architecture.svg)
+---
+
+## 🎯 Motivation
+
+- **Hands-on learning**: Combines coding, infrastructure, automation, and monitoring.  
+- **Practical AIOps example**: AI-powered log monitoring and predictive alerts.  
+- **Professional showcase**: Demonstrates real DevOps skills for production-ready apps.
+
+---
+
+## ✨ Features
+
+- ✅ User authentication and authorization  
+- ✅ Voting interface (frontend & backend)  
+- ✅ Dockerized & containerized deployment  
+- ✅ CI/CD pipeline with GitHub Actions  
+- ✅ Monitoring dashboards (Prometheus / Grafana)  
+- ✅ AIOps predictive alerts for potential issues  
+- ✅ Activity logging for traceability
+
+---
 
 ### Application Components and Data Flow
+ ![Detailed Architecture](./architecture.png)
 
 | Service        | Technology     | Role                                                 | Communication                                           |
 | :------------- | :------------- | :--------------------------------------------------- | :------------------------------------------------------ |
@@ -156,3 +188,12 @@ The `monitoring` directory contains an example **ServiceMonitor** manifest, demo
 ├── architecture.png           # Updated Architecture Diagram
 └── README.md                  # Comprehensive Project Documentation
 ```
+
+## 👤 Authors & Acknowledgments
+
+- Youssef El Zarka – DevOps Engineer
+<p>
+  <a href="https://www.linkedin.com/in/youssef-elzarka/" target="_blank">
+    <img src="https://img.shields.io/badge/🔗-LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+</p>
