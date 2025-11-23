@@ -41,6 +41,7 @@ To run the application locally, including the new AI Agent, follow these steps:
 # This command builds all images and starts all services
 docker compose up --build -d
 ```
+![Docker-Compose](./docker-compose.png)
 
 ### Step 2: Verify Service Health
 
@@ -53,6 +54,11 @@ All services, including the new `ai-monitor`, should show a status of `running` 
 
 1.  **Voting Interface:** `http://localhost:8080`
 2.  **Results Interface:** `http://localhost:8081`
+**Note: For a better experience, if you submit your vote in the Voting Interface, you will be redirected to the Results Interface.
+**
+![Voting-Interface](./vote.png)
+![Resulting-Interface](./result.png) 
+
 
 ### Step 4: Test the AI Agent (Simulation)
 
@@ -67,6 +73,8 @@ Check the logs of the `ai-monitor` service to see the prediction output:
 ```bash
 docker compose logs ai-monitor
 ```
+![AI-Agent](./AIagent.png) 
+
 
 ### Step 5: Stop and Clean Up
 
