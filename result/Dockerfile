@@ -23,7 +23,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 80
+EXPOSE 4000
 
 # Change ownership to the non-root user
 RUN chown -R appuser:appuser /app
