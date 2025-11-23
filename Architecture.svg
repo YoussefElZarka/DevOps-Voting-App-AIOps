@@ -1,0 +1,257 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" style="background: #f8f9fa;">
+  <defs>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #333; }
+      .subtitle { font: 16px sans-serif; fill: #666; }
+      .comp-title { font: bold 14px sans-serif; fill: #333; text-anchor: middle; }
+      .comp-desc { font: 12px sans-serif; fill: #666; text-anchor: middle; }
+      .label { font: 13px sans-serif; fill: #555; text-anchor: middle; }
+    </style>
+    
+    <!-- Arrow marker -->
+    <marker id="arrowblue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4facfe" />
+    </marker>
+    <marker id="arrowgray" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#999" />
+    </marker>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.2"/>
+    </filter>
+    
+    <!-- Animated dashed line patterns -->
+    <style>
+      @keyframes dash {
+        to {
+          stroke-dashoffset: -20;
+        }
+      }
+      .animated-flow {
+        stroke-dasharray: 8 4;
+        animation: dash 1s linear infinite;
+      }
+      .animated-flow-fast {
+        stroke-dasharray: 8 4;
+        animation: dash 0.5s linear infinite;
+      }
+      .animated-flow-slow {
+        stroke-dasharray: 8 4;
+        animation: dash 2s linear infinite;
+      }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="700" y="30" class="title" text-anchor="middle">DevOps Voting App - Production Architecture</text>
+  
+  <!-- User at top -->
+  <g id="user">
+    <circle cx="700" cy="80" r="40" fill="#5a7a9f" filter="url(#shadow)"/>
+    <circle cx="700" cy="68" r="15" fill="white"/>
+    <ellipse cx="700" cy="98" rx="24" ry="18" fill="white"/>
+    <text x="700" y="140" class="comp-title" style="font-size: 16px;">User/Voter</text>
+    <text x="700" y="158" class="comp-desc" style="font-size: 13px;">Casts votes &amp; Views results</text>
+  </g>
+  
+  <!-- CI/CD Pipeline (Right side) -->
+  <g id="cicd-pipeline">
+    <rect x="1050" y="60" width="300" height="350" rx="15" fill="none" stroke="#e91e63" stroke-width="2" stroke-dasharray="5,5"/>
+    <text x="1200" y="85" class="title" text-anchor="middle">CI/CD Pipeline</text>
+    <text x="1200" y="100" class="subtitle" text-anchor="middle">(GitHub Actions)</text>
+    
+    <!-- GitHub Repository -->
+    <rect x="1100" y="120" width="200" height="70" rx="10" fill="#c084fc" filter="url(#shadow)"/>
+    <text x="1200" y="152" style="font-size: 36px; text-anchor: middle;">📦</text>
+    <text x="1200" y="172" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">GitHub Repository</text>
+    <text x="1200" y="185" class="comp-desc" fill="white" style="font-size: 12px;">Source Code, Dockerfile</text>
+    
+    <!-- Build & Scan -->
+    <rect x="1100" y="210" width="200" height="70" rx="10" fill="#c084fc" filter="url(#shadow)"/>
+    <text x="1200" y="242" style="font-size: 36px; text-anchor: middle;">🏗️</text>
+    <text x="1200" y="262" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">Build &amp; Scan</text>
+    <text x="1200" y="275" class="comp-desc" fill="white" style="font-size: 12px;">Docker Build, Trivy Scan</text>
+    
+    <!-- Container Registry -->
+    <rect x="1100" y="300" width="200" height="70" rx="10" fill="#c084fc" filter="url(#shadow)"/>
+    <text x="1200" y="332" style="font-size: 36px; text-anchor: middle;">📦</text>
+    <text x="1200" y="352" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">Container Registry</text>
+    <text x="1200" y="365" class="comp-desc" fill="white" style="font-size: 12px;">ACR / Docker Hub</text>
+    
+    <!-- Deployment Job -->
+    <rect x="1100" y="390" width="200" height="70" rx="10" fill="#c084fc" filter="url(#shadow)"/>
+    <text x="1200" y="422" style="font-size: 36px; text-anchor: middle;">🚀</text>
+    <text x="1200" y="442" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">Deployment Job</text>
+    <text x="1200" y="455" class="comp-desc" fill="white" style="font-size: 12px;">Auto-deploy to K8S</text>
+    
+    <!-- Arrows in pipeline -->
+    <line x1="1200" y1="190" x2="1200" y2="210" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+    <line x1="1200" y1="280" x2="1200" y2="300" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+    <line x1="1200" y1="370" x2="1200" y2="390" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+  </g>
+  
+  <!-- Local Development (Left side) -->
+  <g id="local-dev">
+    <rect x="50" y="140" width="280" height="200" rx="15" fill="none" stroke="#999" stroke-width="2" stroke-dasharray="5,5"/>
+    <text x="190" y="165" class="subtitle" text-anchor="middle">Local Development</text>
+    <text x="190" y="180" class="comp-desc" text-anchor="middle">(Docker Compose)</text>
+    
+    <!-- Vote App -->
+    <rect x="70" y="195" width="90" height="75" rx="8" fill="#4caf50" filter="url(#shadow)"/>
+    <text x="115" y="228" style="font-size: 32px; text-anchor: middle;">🗳️</text>
+    <text x="115" y="248" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">Vote App</text>
+    <text x="115" y="262" class="comp-desc" fill="white" style="font-size: 12px;">Flask</text>
+    
+    <!-- Result App -->
+    <rect x="230" y="195" width="90" height="75" rx="8" fill="#4caf50" filter="url(#shadow)"/>
+    <text x="275" y="228" style="font-size: 32px; text-anchor: middle;">📊</text>
+    <text x="275" y="248" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">Result App</text>
+    <text x="275" y="262" class="comp-desc" fill="white" style="font-size: 12px;">Node.js</text>
+    
+    <!-- PostgreSQL -->
+    <rect x="150" y="285" width="90" height="60" rx="8" fill="#336791" filter="url(#shadow)"/>
+    <text x="195" y="313" style="font-size: 30px; text-anchor: middle;">🗄️</text>
+    <text x="195" y="330" class="comp-title" fill="white" style="font-size: 14px; font-weight: bold;">PostgreSQL</text>
+    <text x="195" y="342" class="comp-desc" fill="white" style="font-size: 11px;">Database</text>
+    
+    <!-- Redis -->
+    <rect x="70" y="285" width="70" height="60" rx="8" fill="#dc382d" filter="url(#shadow)"/>
+    <text x="105" y="313" style="font-size: 30px; text-anchor: middle;">⚡</text>
+    <text x="105" y="330" class="comp-title" fill="white" style="font-size: 14px; font-weight: bold;">Redis</text>
+    <text x="105" y="342" class="comp-desc" fill="white" style="font-size: 11px;">Cache</text>
+  </g>
+  
+  <!-- Production Environment (Center) -->
+  <g id="k8s-cluster">
+    <rect x="380" y="200" width="600" height="720" rx="15" fill="#e3f2fd" stroke="#2196f3" stroke-width="3"/>
+    <text x="680" y="230" class="title" text-anchor="middle">Production Environment</text>
+    <text x="680" y="250" class="subtitle" text-anchor="middle">Kubernetes Cluster (K3S)</text>
+    
+    <!-- Ingress Controller -->
+    <rect x="565" y="280" width="230" height="70" rx="10" fill="#607d8b" filter="url(#shadow)"/>
+    <text x="680" y="312" style="font-size: 36px; text-anchor: middle;">🔀</text>
+    <text x="680" y="332" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">NGINX Ingress Controller</text>
+    <text x="680" y="345" class="comp-desc" fill="white" style="font-size: 12px;">(Routes external traffic)</text>
+    
+    <!-- Vote App K8S -->
+    <rect x="410" y="370" width="130" height="105" rx="10" fill="#81c784" filter="url(#shadow)"/>
+    <text x="475" y="408" style="font-size: 36px; text-anchor: middle;">🗳️</text>
+    <text x="475" y="430" class="comp-title" style="font-size: 16px; font-weight: bold;">Vote App</text>
+    <text x="475" y="448" class="comp-desc" style="font-size: 13px;">Python Flask</text>
+    <text x="475" y="463" class="comp-desc" style="font-size: 11px;">Replicas: 3</text>
+    
+    <!-- Result App K8S -->
+    <rect x="800" y="370" width="130" height="105" rx="10" fill="#81c784" filter="url(#shadow)"/>
+    <text x="865" y="408" style="font-size: 36px; text-anchor: middle;">📊</text>
+    <text x="865" y="430" class="comp-title" style="font-size: 16px; font-weight: bold;">Result App</text>
+    <text x="865" y="448" class="comp-desc" style="font-size: 13px;">Node.js Express</text>
+    <text x="865" y="463" class="comp-desc" style="font-size: 11px;">Replicas: 2</text>
+    
+    <!-- Worker -->
+    <rect x="600" y="500" width="160" height="95" rx="10" fill="#64b5f6" filter="url(#shadow)"/>
+    <text x="680" y="538" style="font-size: 36px; text-anchor: middle;">⚙️</text>
+    <text x="680" y="560" class="comp-title" style="font-size: 16px; font-weight: bold;">Worker App</text>
+    <text x="680" y="577" class="comp-desc" style="font-size: 13px;">.NET Core Worker</text>
+    <text x="680" y="590" class="comp-desc" style="font-size: 11px;">Replicas: 2</text>
+    
+    <!-- Redis K8S -->
+    <rect x="410" y="620" width="130" height="95" rx="10" fill="#ef5350" filter="url(#shadow)"/>
+    <text x="475" y="658" style="font-size: 36px; text-anchor: middle;">⚡</text>
+    <text x="475" y="680" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">Redis</text>
+    <text x="475" y="697" class="comp-desc" fill="white" style="font-size: 12px;">In-memory DB</text>
+    <text x="475" y="710" class="comp-desc" fill="white" style="font-size: 11px;">StatefulSet</text>
+    
+    <!-- PostgreSQL K8S -->
+    <rect x="800" y="620" width="130" height="95" rx="10" fill="#5c6bc0" filter="url(#shadow)"/>
+    <text x="865" y="658" style="font-size: 36px; text-anchor: middle;">🗄️</text>
+    <text x="865" y="680" class="comp-title" fill="white" style="font-size: 16px; font-weight: bold;">PostgreSQL</text>
+    <text x="865" y="697" class="comp-desc" fill="white" style="font-size: 12px;">Persistent DB</text>
+    <text x="865" y="710" class="comp-desc" fill="white" style="font-size: 11px;">StatefulSet</text>
+    
+    <!-- Monitoring -->
+    <g id="monitoring-stack">
+      <rect x="400" y="740" width="540" height="180" rx="10" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+      <text x="670" y="765" class="subtitle" text-anchor="middle" style="font-size: 17px;">Monitoring &amp; AI/ops Stack</text>
+      
+      <!-- Prometheus -->
+      <rect x="420" y="780" width="110" height="110" rx="8" fill="#e65100" filter="url(#shadow)"/>
+      <text x="475" y="820" style="font-size: 36px; text-anchor: middle;">📈</text>
+      <text x="475" y="850" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">Prometheus</text>
+      <text x="475" y="868" class="comp-desc" fill="white" style="font-size: 12px;">Metrics Collection</text>
+      <text x="475" y="882" class="comp-desc" fill="white" style="font-size: 10px;">Time-series DB</text>
+      
+      <!-- Grafana -->
+      <rect x="550" y="780" width="110" height="110" rx="8" fill="#f57c00" filter="url(#shadow)"/>
+      <text x="605" y="820" style="font-size: 36px; text-anchor: middle;">📊</text>
+      <text x="605" y="850" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">Grafana</text>
+      <text x="605" y="868" class="comp-desc" fill="white" style="font-size: 12px;">Dashboards</text>
+      <text x="605" y="882" class="comp-desc" fill="white" style="font-size: 10px;">Visualization</text>
+      
+      <!-- AI Agent -->
+      <rect x="680" y="780" width="110" height="110" rx="8" fill="#6a1b9a" filter="url(#shadow)"/>
+      <text x="735" y="820" style="font-size: 36px; text-anchor: middle;">🤖</text>
+      <text x="735" y="850" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">AI Agent</text>
+      <text x="735" y="868" class="comp-desc" fill="white" style="font-size: 12px;">AI/ops Monitor</text>
+      <text x="735" y="882" class="comp-desc" fill="white" style="font-size: 10px;">Predictive</text>
+      
+      <!-- Alert Manager -->
+      <rect x="810" y="780" width="110" height="110" rx="8" fill="#d32f2f" filter="url(#shadow)"/>
+      <text x="865" y="820" style="font-size: 36px; text-anchor: middle;">🚨</text>
+      <text x="865" y="850" class="comp-title" fill="white" style="font-size: 15px; font-weight: bold;">Alert Manager</text>
+      <text x="865" y="868" class="comp-desc" fill="white" style="font-size: 12px;">Notifications</text>
+      <text x="865" y="882" class="comp-desc" fill="white" style="font-size: 10px;">Slack/Email</text>
+    </g>
+  </g>
+  
+  <!-- Setup Guide (Right) -->
+  <rect x="1020" y="480" width="340" height="120" rx="15" fill="#f0f4f8" stroke="#64b5f6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1190" y="510" class="title" text-anchor="middle">Local K8S Setup Guide</text>
+  <text x="1190" y="530" class="subtitle" text-anchor="middle">(Documentation)</text>
+  <text x="1050" y="560" class="comp-desc">Explains K3S Setup and</text>
+  <text x="1050" y="580" class="comp-desc">trade-offs</text>
+  
+  <!-- Container Registry Label -->
+  <rect x="1020" y="640" width="340" height="80" rx="15" fill="#f0f4f8" stroke="#9c27b0" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1190" y="670" class="title" text-anchor="middle">Container Registry</text>
+  <text x="1190" y="695" class="comp-desc" text-anchor="middle">ACR / Docker Hub</text>
+  
+  <!-- Main Arrows -->
+  <!-- User to Ingress -->
+  <path d="M 700 120 Q 700 210 680 280" stroke="#4facfe" stroke-width="3" fill="none" marker-end="url(#arrowblue)" class="animated-flow-fast"/>
+  
+  <!-- Ingress to Vote -->
+  <path d="M 600 350 L 520 370" stroke="#4facfe" stroke-width="2" fill="none" marker-end="url(#arrowblue)" class="animated-flow"/>
+  
+  <!-- Ingress to Result -->
+  <path d="M 760 350 L 830 370" stroke="#4facfe" stroke-width="2" fill="none" marker-end="url(#arrowblue)" class="animated-flow"/>
+  
+  <!-- Vote to Redis -->
+  <line x1="475" y1="475" x2="475" y2="620" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+  
+  <!-- Worker to Redis -->
+  <line x1="615" y1="595" x2="540" y2="650" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+  
+  <!-- Worker to PostgreSQL -->
+  <line x1="745" y1="595" x2="835" y2="620" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+  
+  <!-- Result to PostgreSQL -->
+  <line x1="865" y1="475" x2="865" y2="620" stroke="#666" stroke-width="2" marker-end="url(#arrowgray)" class="animated-flow"/>
+  
+  <!-- Monitoring connections (dashed) -->
+  <line x1="475" y1="780" x2="475" y2="715" stroke="#ff9800" stroke-width="1.5" class="animated-flow-slow"/>
+  <line x1="605" y1="780" x2="680" y2="595" stroke="#ff9800" stroke-width="1.5" class="animated-flow-slow"/>
+  <line x1="735" y1="780" x2="865" y2="715" stroke="#ff9800" stroke-width="1.5" class="animated-flow-slow"/>
+  
+  <!-- CI/CD to K8S -->
+  <path d="M 1100 425 Q 1040 400 980 350" stroke="#c084fc" stroke-width="3" fill="none" marker-end="url(#arrowblue)" class="animated-flow"/>
+  
+  <!-- Registry to K8S -->
+  <path d="M 1020 680 Q 1000 500 980 420" stroke="#9c27b0" stroke-width="2" fill="none" marker-end="url(#arrowblue)" class="animated-flow"/>
+  
+  <!-- User to Local Dev (dashed) -->
+  <path d="M 670 115 Q 400 130 330 140" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrowgray)" class="animated-flow-slow"/>
+  
+  <!-- User to Result -->
+  <path d="M 730 120 Q 900 220 865 370" stroke="#4facfe" stroke-width="3" fill="none" marker-end="url(#arrowblue)" class="animated-flow-fast"/>
+</svg>
