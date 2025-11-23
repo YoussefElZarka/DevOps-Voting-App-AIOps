@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, g
+from flask import Flask, render_template, request, make_response, g, redirect
 from redis import Redis
 import os
 import socket
@@ -18,10 +18,15 @@ app.logger.setLevel(logging.INFO)
 
 def get_redis():
     if not hasattr(g, 'redis'):
-        g.redis = Redis(host="redis", db=0, socket_timeout=5)
+        g.redis = Redis(
+            host=os.getenv('REDIS_HOST', 'redis'),
+            port=int(os.getenv('REDIS_PORT', 6379)),
+            db=0,
+            socket_timeout=5,
+        )
     return g.redis
 
-@app.route("/", methods=['POST','GET'])
+@app.route("/", methods=['POST', 'GET'])
 def hello():
     voter_id = request.cookies.get('voter_id')
     if not voter_id:
@@ -35,6 +40,10 @@ def hello():
         app.logger.info('Received vote for %s', vote)
         data = json.dumps({'voter_id': voter_id, 'vote': vote})
         redis.rpush('votes', data)
+        
+        response = redirect('http://localhost:8081', code=302)
+        response.set_cookie('voter_id', voter_id)
+        return response
 
     resp = make_response(render_template(
         'index.html',
@@ -45,7 +54,6 @@ def hello():
     ))
     resp.set_cookie('voter_id', voter_id)
     return resp
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
