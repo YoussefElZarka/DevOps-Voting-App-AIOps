@@ -2,11 +2,6 @@
 
 ![DevOps Voting App - Comprehensive Architecture](./Architecture.svg)
 
-[![License](https://img.shields.io/github/license/YoussefElZarka/DevOps-Voting-App-AIOps)](LICENSE)  
-[![Build Status](https://img.shields.io/github/actions/workflow/status/YoussefElZarka/DevOps-Voting-App-AIOps/ci.yml)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/actions)  
-[![Issues](https://img.shields.io/github/issues/YoussefElZarka/DevOps-Voting-App-AIOps)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/issues)  
-[![Stars](https://img.shields.io/github/stars/YoussefElZarka/DevOps-Voting-App-AIOps)](https://github.com/YoussefElZarka/DevOps-Voting-App-AIOps/stargazers)
-
 
 
 ## Project Overview
