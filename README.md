@@ -54,8 +54,7 @@ All services, including the new `ai-monitor`, should show a status of `running` 
 
 1.  **Voting Interface:** `http://localhost:8080`
 2.  **Results Interface:** `http://localhost:8081`
-**Note: For a better experience, if you submit your vote in the Voting Interface, you will be redirected to the Results Interface.
-**
+   **Note: For a better experience, if you submit your vote in the Voting Interface, you will be redirected to the Results Interface.**
 ![Voting-Interface](./vote.png)
 ![Resulting-Interface](./result.png) 
 
