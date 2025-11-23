@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'voting-app-monitor'
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Vote service
+  - job_name: 'vote'
+    static_configs:
+      - targets: ['vote:80']
+    metrics_path: '/metrics'
+
+  # Result service
+  - job_name: 'result'
+    static_configs:
+      - targets: ['result:4000']
+    metrics_path: '/metrics'
+
+  # AI Agent
+  - job_name: 'ai-agent'
+    static_configs:
+      - targets: ['ai-monitor:5001']
+    metrics_path: '/status'
+
+  # Redis exporter (optional)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # PostgreSQL exporter (optional)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['db:5432']
